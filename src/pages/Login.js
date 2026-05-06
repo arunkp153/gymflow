@@ -26,11 +26,14 @@ function Login() {
       .eq("password", password)
 
     if (error) {
+
       console.log(error)
+
       alert("Login failed")
     }
 
     else if (data.length === 0) {
+
       alert("Invalid email or password")
     }
 
@@ -78,6 +81,7 @@ function Login() {
           borderRadius: "20px"
         }}
       >
+
         <h1
           style={{
             textAlign: "center",
@@ -91,7 +95,9 @@ function Login() {
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
           style={inputStyle}
         />
 
@@ -99,9 +105,30 @@ function Login() {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
           style={inputStyle}
         />
+
+        <button
+          onClick={() => {
+            localStorage.clear()
+            window.location.reload()
+          }}
+          style={{
+            width: "100%",
+            padding: "14px",
+            border: "none",
+            borderRadius: "10px",
+            backgroundColor: "red",
+            color: "white",
+            marginBottom: "15px",
+            cursor: "pointer"
+          }}
+        >
+          Reset App
+        </button>
 
         <button
           onClick={handleLogin}
@@ -109,6 +136,7 @@ function Login() {
         >
           Login
         </button>
+
       </div>
     </div>
   )

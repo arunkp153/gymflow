@@ -1,17 +1,28 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Register from "./pages/Register"
 import Login from "./pages/Login"
 
 function App() {
 
-  const [currentPage, setCurrentPage] =
-    useState("home")
+  const [currentPage, setCurrentPage] = useState("home")
+
+  useEffect(() => {
+
+    const savedPage = localStorage.getItem("page")
+
+    if (savedPage) {
+      setCurrentPage(savedPage)
+    }
+
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem("page", currentPage)
+  }, [currentPage])
 
   if (currentPage === "register") {
     return (
-      <Register
-        setCurrentPage={setCurrentPage}
-      />
+      <Register setCurrentPage={setCurrentPage} />
     )
   }
 
@@ -37,8 +48,7 @@ function App() {
       <div
         style={{
           textAlign: "center",
-          maxWidth: "500px",
-          width: "100%"
+          maxWidth: "500px"
         }}
       >
         <h1
@@ -62,9 +72,7 @@ function App() {
         </p>
 
         <button
-          onClick={() =>
-            setCurrentPage("register")
-          }
+          onClick={() => setCurrentPage("register")}
           style={{
             marginTop: "30px",
             padding: "14px 30px",
@@ -82,9 +90,7 @@ function App() {
         </button>
 
         <button
-          onClick={() =>
-            setCurrentPage("login")
-          }
+          onClick={() => setCurrentPage("login")}
           style={{
             marginTop: "15px",
             padding: "14px 30px",

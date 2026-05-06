@@ -1,14 +1,4 @@
-function Dashboard({
-  gymData,
-  setLoggedInGym
-}) {
-
-  const handleLogout = () => {
-
-    localStorage.removeItem("gymData")
-
-    setLoggedInGym(null)
-  }
+function Dashboard({ gymData }) {
 
   return (
     <div
@@ -21,55 +11,28 @@ function Dashboard({
       }}
     >
 
-      <div
+      <h1
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          fontSize: "32px",
+          marginBottom: "5px"
+        }}
+      >
+        Welcome Back 👋
+      </h1>
+
+      <h2
+        style={{
+          color: "#999",
           marginBottom: "30px"
         }}
       >
-
-        <div>
-          <h1
-            style={{
-              fontSize: "32px",
-              marginBottom: "5px"
-            }}
-          >
-            Welcome Back 👋
-          </h1>
-
-          <h2
-            style={{
-              color: "#999"
-            }}
-          >
-            {gymData.gym_name}
-          </h2>
-        </div>
-
-        <button
-          onClick={handleLogout}
-          style={{
-            padding: "10px 16px",
-            border: "none",
-            borderRadius: "10px",
-            backgroundColor: "red",
-            color: "white",
-            cursor: "pointer"
-          }}
-        >
-          Logout
-        </button>
-
-      </div>
+        {gymData.gym_name}
+      </h2>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(150px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
           gap: "15px",
           marginBottom: "30px"
         }}

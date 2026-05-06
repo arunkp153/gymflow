@@ -1,10 +1,12 @@
 import { useState } from "react"
 import supabase from "../supabase"
+import Dashboard from "./Dashboard"
 
 function Login() {
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loggedInGym, setLoggedInGym] = useState(null)
 
   const handleLogin = async () => {
 
@@ -29,10 +31,19 @@ function Login() {
     }
 
     else {
+
       alert("Login Successful")
+
+      setLoggedInGym(data[0])
 
       console.log(data)
     }
+  }
+
+  if (loggedInGym) {
+    return (
+      <Dashboard gymData={loggedInGym} />
+    )
   }
 
   return (

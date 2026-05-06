@@ -4,9 +4,17 @@ import Login from "./pages/Login"
 
 function App() {
 
-  const [currentPage, setCurrentPage] = useState(
-    localStorage.getItem("page") || "home"
-  )
+  const [currentPage, setCurrentPage] = useState("home")
+
+  useEffect(() => {
+
+    const savedPage = localStorage.getItem("page")
+
+    if (savedPage) {
+      setCurrentPage(savedPage)
+    }
+
+  }, [])
 
   useEffect(() => {
     localStorage.setItem("page", currentPage)

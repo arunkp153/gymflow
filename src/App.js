@@ -1,28 +1,17 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Register from "./pages/Register"
 import Login from "./pages/Login"
 
 function App() {
 
-  const [currentPage, setCurrentPage] = useState("home")
-
-  useEffect(() => {
-
-    const savedPage = localStorage.getItem("page")
-
-    if (savedPage) {
-      setCurrentPage(savedPage)
-    }
-
-  }, [])
-
-  useEffect(() => {
-    localStorage.setItem("page", currentPage)
-  }, [currentPage])
+  const [currentPage, setCurrentPage] =
+    useState("home")
 
   if (currentPage === "register") {
     return (
-      <Register setCurrentPage={setCurrentPage} />
+      <Register
+        setCurrentPage={setCurrentPage}
+      />
     )
   }
 
@@ -48,7 +37,8 @@ function App() {
       <div
         style={{
           textAlign: "center",
-          maxWidth: "500px"
+          maxWidth: "500px",
+          width: "100%"
         }}
       >
         <h1
@@ -68,11 +58,14 @@ function App() {
             lineHeight: "30px"
           }}
         >
-          Manage your gym members, fees and reminders effortlessly.
+          Manage your gym members,
+          fees and reminders effortlessly.
         </p>
 
         <button
-          onClick={() => setCurrentPage("register")}
+          onClick={() =>
+            setCurrentPage("register")
+          }
           style={{
             marginTop: "30px",
             padding: "14px 30px",
@@ -90,7 +83,9 @@ function App() {
         </button>
 
         <button
-          onClick={() => setCurrentPage("login")}
+          onClick={() =>
+            setCurrentPage("login")
+          }
           style={{
             marginTop: "15px",
             padding: "14px 30px",
@@ -106,6 +101,7 @@ function App() {
         >
           Login
         </button>
+
       </div>
     </div>
   )

@@ -1,4 +1,10 @@
-function Dashboard({ gymData }) {
+function Dashboard({
+  gymData,
+  handleLogout
+}) {
+
+  const today =
+    new Date().toISOString().split("T")[0]
 
   return (
     <div
@@ -11,28 +17,72 @@ function Dashboard({ gymData }) {
       }}
     >
 
-      <h1
+      <div
         style={{
-          fontSize: "32px",
-          marginBottom: "5px"
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "15px",
+          marginBottom: "25px"
         }}
       >
-        Welcome Back 👋
-      </h1>
 
-      <h2
-        style={{
-          color: "#999",
-          marginBottom: "30px"
-        }}
-      >
-        {gymData.gym_name}
-      </h2>
+        <div>
+          <h1
+            style={{
+              fontSize: "32px",
+              marginBottom: "5px"
+            }}
+          >
+            Welcome Back 👋
+          </h1>
+
+          <h2
+            style={{
+              color: "#999",
+              marginBottom: "10px"
+            }}
+          >
+            {gymData.gym_name}
+          </h2>
+
+          <input
+            type="date"
+            defaultValue={today}
+            style={{
+              padding: "12px",
+              borderRadius: "10px",
+              border: "none",
+              backgroundColor: "#1f1f1f",
+              color: "white",
+              fontSize: "15px"
+            }}
+          />
+        </div>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: "12px 18px",
+            border: "none",
+            borderRadius: "10px",
+            backgroundColor: "red",
+            color: "white",
+            cursor: "pointer",
+            fontWeight: "bold"
+          }}
+        >
+          Logout
+        </button>
+
+      </div>
 
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(160px, 1fr))",
           gap: "15px",
           marginBottom: "30px"
         }}
@@ -40,18 +90,54 @@ function Dashboard({ gymData }) {
 
         <div style={cardStyle}>
           <h3>Total Members</h3>
-          <p style={numberStyle}>0</p>
+
+          <p style={numberStyle}>
+            0
+          </p>
         </div>
 
         <div style={cardStyle}>
           <h3>Due Today</h3>
-          <p style={numberStyle}>0</p>
+
+          <p style={numberStyle}>
+            0
+          </p>
         </div>
 
         <div style={cardStyle}>
-          <h3>Expired</h3>
-          <p style={numberStyle}>0</p>
+          <h3>Expired Plans</h3>
+
+          <p style={numberStyle}>
+            0
+          </p>
         </div>
+
+      </div>
+
+      <div
+        style={{
+          backgroundColor: "#1a1a1a",
+          padding: "20px",
+          borderRadius: "15px",
+          marginBottom: "25px"
+        }}
+      >
+
+        <h2
+          style={{
+            marginBottom: "10px"
+          }}
+        >
+          Today's Due Members
+        </h2>
+
+        <p
+          style={{
+            color: "#888"
+          }}
+        >
+          No due payments today
+        </p>
 
       </div>
 
@@ -64,7 +150,7 @@ function Dashboard({ gymData }) {
       </button>
 
       <button style={buttonStyle}>
-        Send Reminders
+        Send WhatsApp Reminders
       </button>
 
     </div>
@@ -78,7 +164,7 @@ const cardStyle = {
 }
 
 const numberStyle = {
-  fontSize: "28px",
+  fontSize: "30px",
   fontWeight: "bold",
   marginTop: "10px"
 }

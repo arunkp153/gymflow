@@ -1,6 +1,7 @@
 import { useState } from "react"
 import Register from "./pages/Register"
 import Login from "./pages/Login"
+import Members from "./pages/Members"
 
 function App() {
 
@@ -18,6 +19,12 @@ function App() {
   if (currentPage === "login") {
     return (
       <Login />
+    )
+  }
+
+  if (currentPage === "members") {
+    return (
+      <Members />
     )
   }
 
@@ -41,6 +48,7 @@ function App() {
           width: "100%"
         }}
       >
+
         <h1
           style={{
             fontSize: "60px",

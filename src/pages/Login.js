@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import supabase from "../supabase"
 import Dashboard from "./Dashboard"
 
@@ -6,7 +6,22 @@ function Login() {
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [loggedInGym, setLoggedInGym] = useState(null)
+
+  const [loggedInGym, setLoggedInGym] =
+    useState(null)
+
+  useEffect(() => {
+
+    const savedGym =
+      localStorage.getItem("gymData")
+
+    if (savedGym) {
+      setLoggedInGym(
+        JSON.parse(savedGym)
+      )
+    }
+
+  }, [])
 
   const handleLogin = async () => {
 
@@ -22,11 +37,14 @@ function Login() {
       .eq("password", password)
 
     if (error) {
+
       console.log(error)
+
       alert("Login failed")
     }
 
     else if (data.length === 0) {
+
       alert("Invalid email or password")
     }
 
@@ -34,15 +52,31 @@ function Login() {
 
       alert("Login Successful")
 
+      localStorage.setItem(
+        "gymData",
+        JSON.stringify(data[0])
+      )
+
       setLoggedInGym(data[0])
 
       console.log(data)
     }
   }
 
+  const handleLogout = () => {
+
+    localStorage.removeItem("gymData")
+
+    setLoggedInGym(null)
+  }
+
   if (loggedInGym) {
+
     return (
-      <Dashboard gymData={loggedInGym} />
+      <Dashboard
+        gymData={loggedInGym}
+        handleLogout={handleLogout}
+      />
     )
   }
 
@@ -81,7 +115,9 @@ function Login() {
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
           style={inputStyle}
         />
 
@@ -89,7 +125,9 @@ function Login() {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
           style={inputStyle}
         />
 

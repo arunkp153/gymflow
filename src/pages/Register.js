@@ -1,7 +1,7 @@
 import { useState } from "react"
 import supabase from "../supabase"
 
-function Register() {
+function Register({ setCurrentPage }) {
 
   const [gymName, setGymName] = useState("")
   const [ownerName, setOwnerName] = useState("")
@@ -83,6 +83,8 @@ function Register() {
       setPhone("")
       setEmail("")
       setPassword("")
+
+      setCurrentPage("login")
     }
   }
 

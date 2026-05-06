@@ -4,9 +4,13 @@ import Dashboard from "./Dashboard"
 
 function Login() {
 
+  const savedGym =
+    JSON.parse(localStorage.getItem("gymData"))
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [loggedInGym, setLoggedInGym] = useState(null)
+  const [loggedInGym, setLoggedInGym] =
+    useState(savedGym)
 
   const handleLogin = async () => {
 
@@ -34,15 +38,21 @@ function Login() {
 
       alert("Login Successful")
 
-      setLoggedInGym(data[0])
+      localStorage.setItem(
+        "gymData",
+        JSON.stringify(data[0])
+      )
 
-      console.log(data)
+      setLoggedInGym(data[0])
     }
   }
 
   if (loggedInGym) {
     return (
-      <Dashboard gymData={loggedInGym} />
+      <Dashboard
+        gymData={loggedInGym}
+        setLoggedInGym={setLoggedInGym}
+      />
     )
   }
 

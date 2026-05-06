@@ -4,24 +4,38 @@ import supabase from "../supabase"
 function Register({ setCurrentPage }) {
 
   const [gymName, setGymName] = useState("")
-  const [ownerName, setOwnerName] = useState("")
+  const [ownerName, setOwnerName] =
+    useState("")
   const [phone, setPhone] = useState("")
   const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [password, setPassword] =
+    useState("")
 
   const handleRegister = async () => {
 
-    if (!gymName || !ownerName || !phone || !email || !password) {
+    if (
+      !gymName ||
+      !ownerName ||
+      !phone ||
+      !email ||
+      !password
+    ) {
       alert("Please fill all fields")
       return
     }
 
-    if (phone.length !== 10 || isNaN(phone)) {
-      alert("Phone number must be 10 digits")
+    if (
+      phone.length !== 10 ||
+      isNaN(phone)
+    ) {
+      alert(
+        "Phone number must be 10 digits"
+      )
       return
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     if (!emailRegex.test(email)) {
       alert("Enter valid email")
@@ -57,7 +71,9 @@ function Register({ setCurrentPage }) {
       if (
         error.message.includes("phone")
       ) {
-        alert("Mobile number already exists")
+        alert(
+          "Mobile number already exists"
+        )
       }
 
       else if (
@@ -76,7 +92,9 @@ function Register({ setCurrentPage }) {
 
       console.log(data)
 
-      alert("Account Created Successfully")
+      alert(
+        "Account Created Successfully"
+      )
 
       setGymName("")
       setOwnerName("")
@@ -123,7 +141,9 @@ function Register({ setCurrentPage }) {
           type="text"
           placeholder="Gym Name"
           value={gymName}
-          onChange={(e) => setGymName(e.target.value)}
+          onChange={(e) =>
+            setGymName(e.target.value)
+          }
           style={inputStyle}
         />
 
@@ -131,7 +151,9 @@ function Register({ setCurrentPage }) {
           type="text"
           placeholder="Owner Name"
           value={ownerName}
-          onChange={(e) => setOwnerName(e.target.value)}
+          onChange={(e) =>
+            setOwnerName(e.target.value)
+          }
           style={inputStyle}
         />
 
@@ -139,7 +161,9 @@ function Register({ setCurrentPage }) {
           type="text"
           placeholder="Phone Number"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) =>
+            setPhone(e.target.value)
+          }
           style={inputStyle}
         />
 
@@ -147,7 +171,9 @@ function Register({ setCurrentPage }) {
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) =>
+            setEmail(e.target.value)
+          }
           style={inputStyle}
         />
 
@@ -155,7 +181,9 @@ function Register({ setCurrentPage }) {
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) =>
+            setPassword(e.target.value)
+          }
           style={inputStyle}
         />
 

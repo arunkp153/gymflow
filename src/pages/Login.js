@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import supabase from "../supabase"
 import Dashboard from "./Dashboard"
 
@@ -13,12 +13,25 @@ function Login() {
   const [loggedInGym, setLoggedInGym] =
     useState(null)
 
+  useEffect(() => {
+
+    const savedGym =
+      localStorage.getItem("gymData")
+
+    if (savedGym) {
+
+      setLoggedInGym(
+        JSON.parse(savedGym)
+      )
+    }
+
+  }, [])
+
   const handleLogin = async () => {
 
     if (!email || !password) {
 
       alert("Please fill all fields")
-
       return
     }
 
@@ -28,31 +41,25 @@ function Login() {
         .select("*")
         .eq("email", email)
         .eq("password", password)
+        .single()
 
     if (error) {
 
       console.log(error)
-
-      alert("Login failed")
-    }
-
-    else if (data.length === 0) {
 
       alert("Invalid email or password")
     }
 
     else {
 
-      alert("Login Successful")
-
       localStorage.setItem(
         "gymData",
-        JSON.stringify(data[0])
+        JSON.stringify(data)
       )
 
-      setLoggedInGym(data[0])
+      setLoggedInGym(data)
 
-      console.log(data)
+      alert("Login Successful")
     }
   }
 

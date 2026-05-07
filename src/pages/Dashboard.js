@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import supabase from "../supabase"
 import Members from "./Members"
 
 function Dashboard({
@@ -9,81 +10,245 @@ function Dashboard({
   const today =
     new Date().toISOString().split("T")[0]
 
+  const [selectedDate, setSelectedDate] =
+    useState(today)
+
+  const [membersData, setMembersData] =
+    useState([])
+
+  const [filteredMembers, setFilteredMembers] =
+    useState([])
+
+  const [currentFilter, setCurrentFilter] =
+    useState("")
+
   const [showMembers, setShowMembers] =
     useState(false)
 
-  if (showMembers) {
-    return <Members />
+  const [openViewMembers, setOpenViewMembers] =
+    useState(false)
+
+  const [totalMembers, setTotalMembers] =
+    useState(0)
+
+  const [dueCount, setDueCount] =
+    useState(0)
+
+  const [expiredCount, setExpiredCount] =
+    useState(0)
+
+  const [expiringSoonCount, setExpiringSoonCount] =
+    useState(0)
+
+  useEffect(() => {
+    fetchMembers()
+  }, [])
+
+  useEffect(() => {
+    filterMembers()
+  }, [
+    selectedDate,
+    membersData,
+    currentFilter
+  ])
+
+  const fetchMembers = async () => {
+
+    const { data, error } =
+      await supabase
+        .from("members")
+        .select("*")
+
+    if (error) {
+
+      console.log(error)
+    }
+
+    else {
+
+      setMembersData(data)
+
+      setTotalMembers(data.length)
+
+      const selected =
+        selectedDate
+
+      const dueMembers =
+        data.filter(
+          (member) =>
+            member.end_date === selected
+        )
+
+      setDueCount(
+        dueMembers.length
+      )
+
+      const expiredMembers =
+        data.filter(
+          (member) =>
+            member.end_date < selected
+        )
+
+      setExpiredCount(
+        expiredMembers.length
+      )
+
+      // 2 DAYS LEFT FIX
+
+      const targetDate =
+        new Date(selectedDate)
+
+      targetDate.setDate(
+        targetDate.getDate() + 2
+      )
+
+      const targetFormatted =
+        targetDate
+          .toISOString()
+          .split("T")[0]
+
+      const expiringSoon =
+        data.filter(
+          (member) =>
+            member.end_date ===
+            targetFormatted
+        )
+
+      setExpiringSoonCount(
+        expiringSoon.length
+      )
+    }
+  }
+
+  const filterMembers = () => {
+
+    let filtered = []
+
+    if (
+      currentFilter === "due"
+    ) {
+
+      filtered =
+        membersData.filter(
+          (member) =>
+            member.end_date ===
+            selectedDate
+        )
+    }
+
+    else if (
+      currentFilter === "expired"
+    ) {
+
+      filtered =
+        membersData.filter(
+          (member) =>
+            member.end_date <
+            selectedDate
+        )
+    }
+
+    else if (
+      currentFilter === "expiring"
+    ) {
+
+      const targetDate =
+        new Date(selectedDate)
+
+      targetDate.setDate(
+        targetDate.getDate() + 2
+      )
+
+      const targetFormatted =
+        targetDate
+          .toISOString()
+          .split("T")[0]
+
+      filtered =
+        membersData.filter(
+          (member) =>
+            member.end_date ===
+            targetFormatted
+        )
+    }
+
+    else if (
+      currentFilter === "all"
+    ) {
+
+      filtered = membersData
+    }
+
+    setFilteredMembers(filtered)
+  }
+
+  const sendReminder = (
+    member
+  ) => {
+
+    const message =
+`B Fitness House 💪
+
+Hi ${member.member_name},
+
+Your gym membership expires on ${member.end_date}.
+
+Pending Fees: ₹${member.amount}
+
+Please renew your plan soon.
+Thank you.`
+
+    const whatsappURL =
+`https://wa.me/91${member.phone}?text=${encodeURIComponent(message)}`
+
+    window.open(
+      whatsappURL,
+      "_blank"
+    )
+  }
+
+  if (
+    showMembers ||
+    openViewMembers
+  ) {
+
+    return (
+      <Members
+        setShowMembers={setShowMembers}
+        openViewMembers={openViewMembers}
+        setOpenViewMembers={setOpenViewMembers}
+      />
+    )
   }
 
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#0f0f0f",
-        color: "white",
-        padding: "20px",
-        fontFamily: "Arial"
-      }}
+      style={pageStyle}
     >
 
       <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "15px",
-          marginBottom: "25px"
-        }}
+        style={headerStyle}
       >
 
         <div>
 
           <h1
-            style={{
-              fontSize: "32px",
-              marginBottom: "5px"
-            }}
+            style={headingStyle}
           >
             Welcome Back 👋
           </h1>
 
-          <h2
-            style={{
-              color: "#999",
-              marginBottom: "10px"
-            }}
+          <p
+            style={gymNameStyle}
           >
             {gymData.gym_name}
-          </h2>
-
-          <input
-            type="date"
-            defaultValue={today}
-            style={{
-              padding: "12px",
-              borderRadius: "10px",
-              border: "none",
-              backgroundColor: "#1f1f1f",
-              color: "white",
-              fontSize: "15px"
-            }}
-          />
+          </p>
 
         </div>
 
         <button
           onClick={handleLogout}
-          style={{
-            padding: "12px 18px",
-            border: "none",
-            borderRadius: "10px",
-            backgroundColor: "red",
-            color: "white",
-            cursor: "pointer",
-            fontWeight: "bold"
-          }}
+          style={logoutButton}
         >
           Logout
         </button>
@@ -91,109 +256,341 @@ function Dashboard({
       </div>
 
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(auto-fit, minmax(160px, 1fr))",
-          gap: "15px",
-          marginBottom: "30px"
-        }}
+        style={dateContainer}
       >
 
-        <div style={cardStyle}>
-          <h3>Total Members</h3>
-          <p style={numberStyle}>
-            0
-          </p>
-        </div>
+        <label
+          style={dateLabel}
+        >
+          Select Date
+        </label>
 
-        <div style={cardStyle}>
-          <h3>Due Today</h3>
-          <p style={numberStyle}>
-            0
-          </p>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Expired Plans</h3>
-          <p style={numberStyle}>
-            0
-          </p>
-        </div>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) =>
+            setSelectedDate(
+              e.target.value
+            )
+          }
+          style={dateInput}
+        />
 
       </div>
 
       <div
-        style={{
-          backgroundColor: "#1a1a1a",
-          padding: "20px",
-          borderRadius: "15px",
-          marginBottom: "25px"
-        }}
+        style={gridStyle}
       >
 
-        <h2
-          style={{
-            marginBottom: "10px"
-          }}
+        <div
+          style={cardStyle}
+          onClick={() =>
+            setCurrentFilter("all")
+          }
         >
-          Today's Due Members
-        </h2>
+          <p style={cardTitle}>
+            Total Members
+          </p>
 
-        <p
-          style={{
-            color: "#888"
-          }}
+          <h1 style={cardNumber}>
+            {totalMembers}
+          </h1>
+        </div>
+
+        <div
+          style={cardStyle}
+          onClick={() =>
+            setCurrentFilter("due")
+          }
         >
-          No due payments today
-        </p>
+          <p style={cardTitle}>
+            Due Payments
+          </p>
+
+          <h1 style={cardNumber}>
+            {dueCount}
+          </h1>
+        </div>
+
+        <div
+          style={cardStyle}
+          onClick={() =>
+            setCurrentFilter("expired")
+          }
+        >
+          <p style={cardTitle}>
+            Expired Plans
+          </p>
+
+          <h1 style={cardNumber}>
+            {expiredCount}
+          </h1>
+        </div>
+
+        <div
+          style={cardStyle}
+          onClick={() =>
+            setCurrentFilter("expiring")
+          }
+        >
+          <p style={cardTitle}>
+            2 Days Left
+          </p>
+
+          <h1 style={cardNumber}>
+            {expiringSoonCount}
+          </h1>
+        </div>
 
       </div>
+
+      {
+        currentFilter !== "" && (
+
+          <div
+            style={membersSection}
+          >
+
+            <h2
+              style={{
+                marginBottom: "20px"
+              }}
+            >
+              Members
+            </h2>
+
+            {
+              filteredMembers.length === 0 && (
+
+                <p
+                  style={{
+                    color: "#888"
+                  }}
+                >
+                  No members found
+                </p>
+
+              )
+            }
+
+            {
+              filteredMembers.map(
+                (member) => (
+
+                  <div
+                    key={member.id}
+                    style={memberCard}
+                  >
+
+                    <div>
+
+                      <h3>
+                        {member.member_name}
+                      </h3>
+
+                      <p>
+                        📞 {member.phone}
+                      </p>
+
+                      <p>
+                        📦 {member.plan}
+                      </p>
+
+                      <p>
+                        💰 ₹{member.amount}
+                      </p>
+
+                      <p>
+                        ⏳ {member.end_date}
+                      </p>
+
+                    </div>
+
+                    <button
+                      onClick={() =>
+                        sendReminder(member)
+                      }
+                      style={reminderButton}
+                    >
+                      Send Reminder
+                    </button>
+
+                  </div>
+
+                )
+              )
+            }
+
+          </div>
+
+        )
+      }
 
       <button
         onClick={() =>
           setShowMembers(true)
         }
-        style={buttonStyle}
+        style={mainButton}
       >
         Add Member
       </button>
 
-      <button style={buttonStyle}>
+      <button
+        onClick={() =>
+          setOpenViewMembers(true)
+        }
+        style={secondaryButton}
+      >
         View Members
-      </button>
-
-      <button style={buttonStyle}>
-        Send WhatsApp Reminders
       </button>
 
     </div>
   )
 }
 
-const cardStyle = {
-  backgroundColor: "#1a1a1a",
-  padding: "20px",
-  borderRadius: "15px"
+const pageStyle = {
+  minHeight: "100vh",
+  background:
+    "linear-gradient(to bottom, #050505, #111)",
+  color: "white",
+  padding: "25px",
+  fontFamily: "Arial"
 }
 
-const numberStyle = {
-  fontSize: "30px",
-  fontWeight: "bold",
-  marginTop: "10px"
+const headerStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: "30px",
+  flexWrap: "wrap",
+  gap: "20px"
 }
 
-const buttonStyle = {
-  width: "100%",
-  padding: "16px",
-  marginBottom: "15px",
-  borderRadius: "12px",
+const headingStyle = {
+  fontSize: "42px",
+  marginBottom: "8px"
+}
+
+const gymNameStyle = {
+  color: "#aaa",
+  fontSize: "18px"
+}
+
+const logoutButton = {
+  background:
+    "linear-gradient(to right, #ff3b3b, #ff0000)",
   border: "none",
-  backgroundColor: "white",
-  color: "black",
+  color: "white",
+  padding: "14px 22px",
+  borderRadius: "14px",
+  cursor: "pointer",
+  fontWeight: "bold",
+  fontSize: "15px"
+}
+
+const dateContainer = {
+  marginBottom: "30px"
+}
+
+const dateLabel = {
+  display: "block",
+  marginBottom: "10px",
+  color: "#bbb"
+}
+
+const dateInput = {
+  padding: "14px",
+  borderRadius: "14px",
+  border: "1px solid #333",
+  backgroundColor: "#1b1b1b",
+  color: "white",
+  fontSize: "16px"
+}
+
+const gridStyle = {
+  display: "grid",
+  gridTemplateColumns:
+    "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: "20px",
+  marginBottom: "35px"
+}
+
+const cardStyle = {
+  background:
+    "linear-gradient(to bottom right, #1b1b1b, #121212)",
+  padding: "28px",
+  borderRadius: "22px",
+  cursor: "pointer",
+  border: "1px solid #242424",
+  boxShadow:
+    "0 0 20px rgba(0,0,0,0.4)"
+}
+
+const cardTitle = {
+  color: "#aaa",
+  marginBottom: "12px",
+  fontSize: "16px"
+}
+
+const cardNumber = {
+  fontSize: "42px"
+}
+
+const membersSection = {
+  backgroundColor: "#151515",
+  padding: "25px",
+  borderRadius: "24px",
+  marginBottom: "30px"
+}
+
+const memberCard = {
+  backgroundColor: "#202020",
+  padding: "22px",
+  borderRadius: "18px",
+  marginBottom: "18px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "20px",
+  flexWrap: "wrap"
+}
+
+const reminderButton = {
+  padding: "14px 20px",
+  border: "none",
+  borderRadius: "14px",
+  background:
+    "linear-gradient(to right, #22c55e, #16a34a)",
+  color: "white",
   fontWeight: "bold",
   cursor: "pointer",
-  fontSize: "16px"
+  fontSize: "15px"
+}
+
+const mainButton = {
+  width: "100%",
+  padding: "18px",
+  border: "none",
+  borderRadius: "18px",
+  background:
+    "linear-gradient(to right, #ffffff, #dcdcdc)",
+  color: "black",
+  fontWeight: "bold",
+  fontSize: "17px",
+  cursor: "pointer",
+  marginBottom: "18px"
+}
+
+const secondaryButton = {
+  width: "100%",
+  padding: "18px",
+  borderRadius: "18px",
+  backgroundColor: "transparent",
+  border: "1px solid #333",
+  color: "white",
+  fontWeight: "bold",
+  fontSize: "17px",
+  cursor: "pointer"
 }
 
 export default Dashboard

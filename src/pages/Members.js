@@ -72,15 +72,22 @@ function Members({
 
   const fetchMembers = async () => {
 
+    const gymId =
+      JSON.parse(
+        localStorage.getItem("gymData")
+      ).id
+
     const { data, error } =
       await supabase
         .from("members")
         .select("*")
+        .eq("gym_id", gymId)
         .order("id", {
           ascending: false
         })
 
     if (!error) {
+
       setMembers(data || [])
     }
   }
@@ -100,9 +107,16 @@ function Members({
       phone.length !== 10 ||
       isNaN(phone)
     ) {
-      alert("Enter valid 10 digit mobile number")
+      alert(
+        "Enter valid 10 digit mobile number"
+      )
       return
     }
+
+    const gymId =
+      JSON.parse(
+        localStorage.getItem("gymData")
+      ).id
 
     const {
       data: existingMember
@@ -110,6 +124,7 @@ function Members({
       .from("members")
       .select("*")
       .eq("phone", phone)
+      .eq("gym_id", gymId)
 
     if (
       existingMember &&
@@ -126,6 +141,7 @@ function Members({
         .from("members")
         .insert([
           {
+            gym_id: gymId,
             member_name: memberName,
             phone: phone,
             plan: plan,
@@ -145,7 +161,9 @@ function Members({
 
     else {
 
-      alert("Member Added Successfully")
+      alert(
+        "Member Added Successfully"
+      )
 
       setMemberName("")
       setPhone("")
@@ -183,8 +201,13 @@ function Members({
 
   const sendReminder = (member) => {
 
+    const gymName =
+      JSON.parse(
+        localStorage.getItem("gymData")
+      ).gym_name
+
     const message =
-`B Fitness House 💪
+`${gymName} 💪
 
 Hi ${member.member_name},
 

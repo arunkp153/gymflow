@@ -282,18 +282,30 @@ Thank you.`
           <p
             style={{
               color:
-                selectedMember.payment_status === "Paid"
+                new Date(selectedMember.end_date) <
+                new Date(today)
+                  ? "#ff7675"
+                  : selectedMember.payment_status === "Paid"
                   ? "lightgreen"
                   : "#ff7675",
+
               fontWeight: "bold",
               marginTop: "15px"
             }}
           >
-            {selectedMember.payment_status}
+            {
+              new Date(selectedMember.end_date) <
+              new Date(today)
+                ? "Due"
+                : selectedMember.payment_status
+            }
           </p>
 
           {
-            selectedMember.payment_status !== "Paid" && (
+            (
+              new Date(selectedMember.end_date) <
+              new Date(today)
+            ) && (
 
               <>
                 <button
@@ -382,14 +394,23 @@ Thank you.`
                   <p
                     style={{
                       color:
-                        member.payment_status === "Paid"
+                        new Date(member.end_date) <
+                        new Date(today)
+                          ? "#ff7675"
+                          : member.payment_status === "Paid"
                           ? "lightgreen"
                           : "#ff7675",
+
                       marginTop: "8px",
                       fontWeight: "bold"
                     }}
                   >
-                    {member.payment_status}
+                    {
+                      new Date(member.end_date) <
+                      new Date(today)
+                        ? "Due"
+                        : member.payment_status
+                    }
                   </p>
 
                 </div>

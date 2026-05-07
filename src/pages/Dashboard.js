@@ -1,3 +1,6 @@
+import { useState } from "react"
+import Members from "./Members"
+
 function Dashboard({
   gymData,
   handleLogout
@@ -5,6 +8,13 @@ function Dashboard({
 
   const today =
     new Date().toISOString().split("T")[0]
+
+  const [showMembers, setShowMembers] =
+    useState(false)
+
+  if (showMembers) {
+    return <Members />
+  }
 
   return (
     <div
@@ -29,6 +39,7 @@ function Dashboard({
       >
 
         <div>
+
           <h1
             style={{
               fontSize: "32px",
@@ -59,6 +70,7 @@ function Dashboard({
               fontSize: "15px"
             }}
           />
+
         </div>
 
         <button
@@ -90,7 +102,6 @@ function Dashboard({
 
         <div style={cardStyle}>
           <h3>Total Members</h3>
-
           <p style={numberStyle}>
             0
           </p>
@@ -98,7 +109,6 @@ function Dashboard({
 
         <div style={cardStyle}>
           <h3>Due Today</h3>
-
           <p style={numberStyle}>
             0
           </p>
@@ -106,7 +116,6 @@ function Dashboard({
 
         <div style={cardStyle}>
           <h3>Expired Plans</h3>
-
           <p style={numberStyle}>
             0
           </p>
@@ -141,7 +150,12 @@ function Dashboard({
 
       </div>
 
-      <button style={buttonStyle}>
+      <button
+        onClick={() =>
+          setShowMembers(true)
+        }
+        style={buttonStyle}
+      >
         Add Member
       </button>
 

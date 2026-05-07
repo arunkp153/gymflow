@@ -1,40 +1,33 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import supabase from "../supabase"
 import Dashboard from "./Dashboard"
 
 function Login() {
 
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] =
+    useState("")
+
+  const [password, setPassword] =
+    useState("")
 
   const [loggedInGym, setLoggedInGym] =
     useState(null)
 
-  useEffect(() => {
-
-    const savedGym =
-      localStorage.getItem("gymData")
-
-    if (savedGym) {
-      setLoggedInGym(
-        JSON.parse(savedGym)
-      )
-    }
-
-  }, [])
-
   const handleLogin = async () => {
 
     if (!email || !password) {
+
       alert("Please fill all fields")
+
       return
     }
 
-    const { data, error } = await supabase
-      .from("gyms")
-      .select("*")
-      .eq("email", email)
-      .eq("password", password)
+    const { data, error } =
+      await supabase
+        .from("gyms")
+        .select("*")
+        .eq("email", email)
+        .eq("password", password)
 
     if (error) {
 
@@ -93,6 +86,7 @@ function Login() {
         fontFamily: "Arial"
       }}
     >
+
       <div
         style={{
           width: "100%",
@@ -102,6 +96,7 @@ function Login() {
           borderRadius: "20px"
         }}
       >
+
         <h1
           style={{
             textAlign: "center",
@@ -137,7 +132,9 @@ function Login() {
         >
           Login
         </button>
+
       </div>
+
     </div>
   )
 }

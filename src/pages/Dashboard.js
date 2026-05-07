@@ -41,11 +41,19 @@ function Dashboard({
     useState(0)
 
   useEffect(() => {
+
     fetchMembers()
+
+    // eslint-disable-next-line
+
   }, [])
 
   useEffect(() => {
+
     filterMembers()
+
+    // eslint-disable-next-line
+
   }, [
     selectedDate,
     membersData,
@@ -70,13 +78,10 @@ function Dashboard({
 
       setTotalMembers(data.length)
 
-      const selected =
-        selectedDate
-
       const dueMembers =
         data.filter(
           (member) =>
-            member.end_date === selected
+            member.end_date === selectedDate
         )
 
       setDueCount(
@@ -86,14 +91,12 @@ function Dashboard({
       const expiredMembers =
         data.filter(
           (member) =>
-            member.end_date < selected
+            member.end_date < selectedDate
         )
 
       setExpiredCount(
         expiredMembers.length
       )
-
-      // 2 DAYS LEFT FIX
 
       const targetDate =
         new Date(selectedDate)

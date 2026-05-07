@@ -84,8 +84,9 @@ function Dashboard({
       const expiryDate =
         expiry.toISOString().split("T")[0]
 
+      // FIXED HERE
       if (
-        expiryDate === selectedFormatted
+        expiryDate <= selectedFormatted
       ) {
         due.push(member)
       }

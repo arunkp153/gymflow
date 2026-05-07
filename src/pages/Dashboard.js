@@ -39,6 +39,7 @@ function Dashboard({
         await supabase
           .from("members")
           .select("*")
+          .eq("gym_id", gymData.id)
 
       if (error) {
 
@@ -53,7 +54,7 @@ function Dashboard({
 
     fetchMembers()
 
-  }, [])
+  }, [gymData.id])
 
   useEffect(() => {
 

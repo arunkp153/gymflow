@@ -40,26 +40,6 @@ function Dashboard({
   const [expiringSoonCount, setExpiringSoonCount] =
     useState(0)
 
-  useEffect(() => {
-
-    fetchMembers()
-
-    // eslint-disable-next-line
-
-  }, [])
-
-  useEffect(() => {
-
-    filterMembers()
-
-    // eslint-disable-next-line
-
-  }, [
-    selectedDate,
-    membersData,
-    currentFilter
-  ])
-
   const fetchMembers = async () => {
 
     const { data, error } =
@@ -70,60 +50,69 @@ function Dashboard({
     if (error) {
 
       console.log(error)
+      return
     }
 
-    else {
+    setMembersData(data)
 
-      setMembersData(data)
+    setTotalMembers(data.length)
 
-      setTotalMembers(data.length)
-
-      const dueMembers =
-        data.filter(
-          (member) =>
-            member.end_date === selectedDate
-        )
-
-      setDueCount(
-        dueMembers.length
+    const dueMembers =
+      data.filter(
+        (member) =>
+          member.end_date === selectedDate
       )
 
-      const expiredMembers =
-        data.filter(
-          (member) =>
-            member.end_date < selectedDate
-        )
+    setDueCount(
+      dueMembers.length
+    )
 
-      setExpiredCount(
-        expiredMembers.length
+    const expiredMembers =
+      data.filter(
+        (member) =>
+          member.end_date < selectedDate
       )
 
-      const targetDate =
-        new Date(selectedDate)
+    setExpiredCount(
+      expiredMembers.length
+    )
 
-      targetDate.setDate(
-        targetDate.getDate() + 2
+    const targetDate =
+      new Date(selectedDate)
+
+    targetDate.setDate(
+      targetDate.getDate() + 2
+    )
+
+    const targetFormatted =
+      targetDate
+        .toISOString()
+        .split("T")[0]
+
+    const expiringSoon =
+      data.filter(
+        (member) =>
+          member.end_date ===
+          targetFormatted
       )
 
-      const targetFormatted =
-        targetDate
-          .toISOString()
-          .split("T")[0]
-
-      const expiringSoon =
-        data.filter(
-          (member) =>
-            member.end_date ===
-            targetFormatted
-        )
-
-      setExpiringSoonCount(
-        expiringSoon.length
-      )
-    }
+    setExpiringSoonCount(
+      expiringSoon.length
+    )
   }
 
-  const filterMembers = () => {
+  useEffect(() => {
+
+    const loadData = async () => {
+
+      await fetchMembers()
+    }
+
+    loadData()
+
+  }, [])
+
+  useEffect(() => {
 
     let filtered = []
 
@@ -183,7 +172,12 @@ function Dashboard({
     }
 
     setFilteredMembers(filtered)
-  }
+
+  }, [
+    selectedDate,
+    membersData,
+    currentFilter
+  ])
 
   const sendReminder = (
     member

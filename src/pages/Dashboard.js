@@ -10,181 +10,114 @@ function Dashboard({
   const today =
     new Date().toISOString().split("T")[0]
 
-  const [selectedDate, setSelectedDate] =
-    useState(today)
-
-  const [membersData, setMembersData] =
-    useState([])
-
-  const [filteredMembers, setFilteredMembers] =
-    useState([])
-
-  const [currentFilter, setCurrentFilter] =
-    useState("")
-
   const [showMembers, setShowMembers] =
     useState(false)
 
   const [openViewMembers, setOpenViewMembers] =
     useState(false)
 
-  const [totalMembers, setTotalMembers] =
-    useState(0)
+  const [members, setMembers] =
+    useState([])
 
-  const [dueCount, setDueCount] =
-    useState(0)
+  const [selectedDate, setSelectedDate] =
+    useState(today)
 
-  const [expiredCount, setExpiredCount] =
-    useState(0)
+  const [dueMembers, setDueMembers] =
+    useState([])
 
-  const [expiringSoonCount, setExpiringSoonCount] =
-    useState(0)
+  const [expiredMembers, setExpiredMembers] =
+    useState([])
 
-  const fetchMembers = async () => {
-
-    const { data, error } =
-      await supabase
-        .from("members")
-        .select("*")
-
-    if (error) {
-
-      console.log(error)
-      return
-    }
-
-    setMembersData(data)
-
-    setTotalMembers(data.length)
-
-    const dueMembers =
-      data.filter(
-        (member) =>
-          member.end_date === selectedDate
-      )
-
-    setDueCount(
-      dueMembers.length
-    )
-
-    const expiredMembers =
-      data.filter(
-        (member) =>
-          member.end_date < selectedDate
-      )
-
-    setExpiredCount(
-      expiredMembers.length
-    )
-
-    const targetDate =
-      new Date(selectedDate)
-
-    targetDate.setDate(
-      targetDate.getDate() + 2
-    )
-
-    const targetFormatted =
-      targetDate
-        .toISOString()
-        .split("T")[0]
-
-    const expiringSoon =
-      data.filter(
-        (member) =>
-          member.end_date ===
-          targetFormatted
-      )
-
-    setExpiringSoonCount(
-      expiringSoon.length
-    )
-  }
+  const [twoDaysLeftMembers, setTwoDaysLeftMembers] =
+    useState([])
 
   useEffect(() => {
 
-    const loadData = async () => {
+    const fetchMembers = async () => {
 
-      await fetchMembers()
+      const { data, error } =
+        await supabase
+          .from("members")
+          .select("*")
+
+      if (error) {
+
+        console.log(error)
+      }
+
+      else {
+
+        setMembers(data || [])
+      }
     }
 
-    loadData()
+    fetchMembers()
 
   }, [])
 
   useEffect(() => {
 
-    let filtered = []
+    const due = []
+    const expired = []
+    const twoDays = []
 
-    if (
-      currentFilter === "due"
-    ) {
+    const selected =
+      new Date(selectedDate)
 
-      filtered =
-        membersData.filter(
-          (member) =>
-            member.end_date ===
-            selectedDate
-        )
-    }
+    const nextTwoDays =
+      new Date(selectedDate)
 
-    else if (
-      currentFilter === "expired"
-    ) {
+    nextTwoDays.setDate(
+      nextTwoDays.getDate() + 2
+    )
 
-      filtered =
-        membersData.filter(
-          (member) =>
-            member.end_date <
-            selectedDate
-        )
-    }
+    members.forEach((member) => {
 
-    else if (
-      currentFilter === "expiring"
-    ) {
+      const expiry =
+        new Date(member.end_date)
 
-      const targetDate =
-        new Date(selectedDate)
+      const expiryDate =
+        expiry.toISOString().split("T")[0]
 
-      targetDate.setDate(
-        targetDate.getDate() + 2
-      )
+      const selectedFormatted =
+        selected.toISOString().split("T")[0]
 
-      const targetFormatted =
-        targetDate
-          .toISOString()
-          .split("T")[0]
+      const nextTwoFormatted =
+        nextTwoDays.toISOString().split("T")[0]
 
-      filtered =
-        membersData.filter(
-          (member) =>
-            member.end_date ===
-            targetFormatted
-        )
-    }
+      if (
+        expiryDate === selectedFormatted
+      ) {
+        due.push(member)
+      }
 
-    else if (
-      currentFilter === "all"
-    ) {
+      if (
+        expiryDate < selectedFormatted
+      ) {
+        expired.push(member)
+      }
 
-      filtered = membersData
-    }
+      if (
+        expiryDate === nextTwoFormatted
+      ) {
+        twoDays.push(member)
+      }
 
-    setFilteredMembers(filtered)
+    })
 
-  }, [
-    selectedDate,
-    membersData,
-    currentFilter
-  ])
+    setDueMembers(due)
+    setExpiredMembers(expired)
+    setTwoDaysLeftMembers(twoDays)
 
-  const sendReminder = (
-    member
-  ) => {
+  }, [members, selectedDate])
+
+  const sendReminder = (member) => {
+
+    const gymName =
+      gymData?.gym_name || "Gym"
 
     const message =
-`B Fitness House 💪
+`${gymName} 💪
 
 Hi ${member.member_name},
 
@@ -195,19 +128,16 @@ Pending Fees: ₹${member.amount}
 Please renew your plan soon.
 Thank you.`
 
-    const whatsappURL =
-`https://wa.me/91${member.phone}?text=${encodeURIComponent(message)}`
+    const phone =
+      `91${member.phone}`
 
     window.open(
-      whatsappURL,
+      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
       "_blank"
     )
   }
 
-  if (
-    showMembers ||
-    openViewMembers
-  ) {
+  if (showMembers || openViewMembers) {
 
     return (
       <Members
@@ -220,32 +150,82 @@ Thank you.`
 
   return (
     <div
-      style={pageStyle}
+      style={{
+        minHeight: "100vh",
+        background:
+          "linear-gradient(to bottom, #0f0f0f, #000)",
+        color: "white",
+        padding: "20px",
+        fontFamily: "Arial"
+      }}
     >
 
       <div
-        style={headerStyle}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "15px",
+          marginBottom: "30px"
+        }}
       >
 
         <div>
 
           <h1
-            style={headingStyle}
+            style={{
+              fontSize: "42px",
+              marginBottom: "8px"
+            }}
           >
             Welcome Back 👋
           </h1>
 
-          <p
-            style={gymNameStyle}
+          <h2
+            style={{
+              color: "#aaa",
+              fontWeight: "normal",
+              marginBottom: "15px"
+            }}
           >
             {gymData.gym_name}
-          </p>
+          </h2>
+
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) =>
+              setSelectedDate(
+                e.target.value
+              )
+            }
+            style={{
+              padding: "14px",
+              borderRadius: "14px",
+              border: "1px solid #333",
+              backgroundColor: "#181818",
+              color: "white",
+              fontSize: "15px",
+              outline: "none"
+            }}
+          />
 
         </div>
 
         <button
           onClick={handleLogout}
-          style={logoutButton}
+          style={{
+            padding: "14px 22px",
+            border: "none",
+            borderRadius: "14px",
+            background:
+              "linear-gradient(to right, #ff3b3b, #ff0000)",
+            color: "white",
+            cursor: "pointer",
+            fontWeight: "bold",
+            fontSize: "15px"
+          }}
         >
           Logout
         </button>
@@ -253,181 +233,169 @@ Thank you.`
       </div>
 
       <div
-        style={dateContainer}
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(auto-fit, minmax(220px, 1fr))",
+          gap: "20px",
+          marginBottom: "35px"
+        }}
       >
 
-        <label
-          style={dateLabel}
-        >
-          Select Date
-        </label>
-
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) =>
-            setSelectedDate(
-              e.target.value
-            )
+        <div
+          onClick={() =>
+            setOpenViewMembers(true)
           }
-          style={dateInput}
-        />
+          style={cardStyle}
+        >
+          <h3>Total Members</h3>
+
+          <p style={numberStyle}>
+            {members.length}
+          </p>
+        </div>
+
+        <div style={cardStyle}>
+          <h3>Due Payments</h3>
+
+          <p style={numberStyle}>
+            {dueMembers.length}
+          </p>
+        </div>
+
+        <div style={cardStyle}>
+          <h3>Expired Plans</h3>
+
+          <p style={numberStyle}>
+            {expiredMembers.length}
+          </p>
+        </div>
+
+        <div style={cardStyle}>
+          <h3>2 Days Left</h3>
+
+          <p style={numberStyle}>
+            {twoDaysLeftMembers.length}
+          </p>
+        </div>
 
       </div>
 
       <div
-        style={gridStyle}
+        style={{
+          backgroundColor: "#151515",
+          padding: "25px",
+          borderRadius: "24px",
+          marginBottom: "30px",
+          border: "1px solid #222"
+        }}
       >
 
-        <div
-          style={cardStyle}
-          onClick={() =>
-            setCurrentFilter("all")
-          }
+        <h2
+          style={{
+            marginBottom: "25px",
+            fontSize: "30px"
+          }}
         >
-          <p style={cardTitle}>
-            Total Members
-          </p>
+          Expiring In 2 Days
+        </h2>
 
-          <h1 style={cardNumber}>
-            {totalMembers}
-          </h1>
-        </div>
+        {
+          twoDaysLeftMembers.length === 0 && (
 
-        <div
-          style={cardStyle}
-          onClick={() =>
-            setCurrentFilter("due")
-          }
-        >
-          <p style={cardTitle}>
-            Due Payments
-          </p>
-
-          <h1 style={cardNumber}>
-            {dueCount}
-          </h1>
-        </div>
-
-        <div
-          style={cardStyle}
-          onClick={() =>
-            setCurrentFilter("expired")
-          }
-        >
-          <p style={cardTitle}>
-            Expired Plans
-          </p>
-
-          <h1 style={cardNumber}>
-            {expiredCount}
-          </h1>
-        </div>
-
-        <div
-          style={cardStyle}
-          onClick={() =>
-            setCurrentFilter("expiring")
-          }
-        >
-          <p style={cardTitle}>
-            2 Days Left
-          </p>
-
-          <h1 style={cardNumber}>
-            {expiringSoonCount}
-          </h1>
-        </div>
-
-      </div>
-
-      {
-        currentFilter !== "" && (
-
-          <div
-            style={membersSection}
-          >
-
-            <h2
+            <p
               style={{
-                marginBottom: "20px"
+                color: "#888"
               }}
             >
-              Members
-            </h2>
+              No members expiring in 2 days
+            </p>
 
-            {
-              filteredMembers.length === 0 && (
+          )
+        }
+
+        {
+          twoDaysLeftMembers.map((member) => (
+
+            <div
+              key={member.id}
+              style={{
+                backgroundColor: "#202020",
+                padding: "22px",
+                borderRadius: "22px",
+                marginBottom: "18px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: "20px"
+              }}
+            >
+
+              <div>
+
+                <h2
+                  style={{
+                    marginBottom: "12px"
+                  }}
+                >
+                  {member.member_name}
+                </h2>
+
+                <p>📞 {member.phone}</p>
+
+                <p>📦 {member.plan}</p>
+
+                <p>💰 ₹{member.amount}</p>
+
+                <p>⏳ {member.end_date}</p>
 
                 <p
                   style={{
-                    color: "#888"
+                    color:
+                      member.payment_status === "Paid"
+                        ? "#4dff91"
+                        : "#ff7675",
+                    fontWeight: "bold",
+                    marginTop: "10px"
                   }}
                 >
-                  No members found
+                  {member.payment_status}
                 </p>
 
-              )
-            }
+              </div>
 
-            {
-              filteredMembers.map(
-                (member) => (
+              <button
+                onClick={() =>
+                  sendReminder(member)
+                }
+                style={{
+                  padding: "16px 24px",
+                  border: "none",
+                  borderRadius: "16px",
+                  background:
+                    "linear-gradient(to right, #22c55e, #16a34a)",
+                  color: "white",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                  fontSize: "15px"
+                }}
+              >
+                Send Reminder
+              </button>
 
-                  <div
-                    key={member.id}
-                    style={memberCard}
-                  >
+            </div>
 
-                    <div>
+          ))
+        }
 
-                      <h3>
-                        {member.member_name}
-                      </h3>
-
-                      <p>
-                        📞 {member.phone}
-                      </p>
-
-                      <p>
-                        📦 {member.plan}
-                      </p>
-
-                      <p>
-                        💰 ₹{member.amount}
-                      </p>
-
-                      <p>
-                        ⏳ {member.end_date}
-                      </p>
-
-                    </div>
-
-                    <button
-                      onClick={() =>
-                        sendReminder(member)
-                      }
-                      style={reminderButton}
-                    >
-                      Send Reminder
-                    </button>
-
-                  </div>
-
-                )
-              )
-            }
-
-          </div>
-
-        )
-      }
+      </div>
 
       <button
         onClick={() =>
           setShowMembers(true)
         }
-        style={mainButton}
+        style={buttonStyle}
       >
         Add Member
       </button>
@@ -436,7 +404,7 @@ Thank you.`
         onClick={() =>
           setOpenViewMembers(true)
         }
-        style={secondaryButton}
+        style={buttonStyle}
       >
         View Members
       </button>
@@ -445,149 +413,33 @@ Thank you.`
   )
 }
 
-const pageStyle = {
-  minHeight: "100vh",
-  background:
-    "linear-gradient(to bottom, #050505, #111)",
-  color: "white",
-  padding: "25px",
-  fontFamily: "Arial"
-}
-
-const headerStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "30px",
-  flexWrap: "wrap",
-  gap: "20px"
-}
-
-const headingStyle = {
-  fontSize: "42px",
-  marginBottom: "8px"
-}
-
-const gymNameStyle = {
-  color: "#aaa",
-  fontSize: "18px"
-}
-
-const logoutButton = {
-  background:
-    "linear-gradient(to right, #ff3b3b, #ff0000)",
-  border: "none",
-  color: "white",
-  padding: "14px 22px",
-  borderRadius: "14px",
-  cursor: "pointer",
-  fontWeight: "bold",
-  fontSize: "15px"
-}
-
-const dateContainer = {
-  marginBottom: "30px"
-}
-
-const dateLabel = {
-  display: "block",
-  marginBottom: "10px",
-  color: "#bbb"
-}
-
-const dateInput = {
-  padding: "14px",
-  borderRadius: "14px",
-  border: "1px solid #333",
-  backgroundColor: "#1b1b1b",
-  color: "white",
-  fontSize: "16px"
-}
-
-const gridStyle = {
-  display: "grid",
-  gridTemplateColumns:
-    "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "20px",
-  marginBottom: "35px"
-}
-
 const cardStyle = {
   background:
-    "linear-gradient(to bottom right, #1b1b1b, #121212)",
-  padding: "28px",
-  borderRadius: "22px",
-  cursor: "pointer",
-  border: "1px solid #242424",
-  boxShadow:
-    "0 0 20px rgba(0,0,0,0.4)"
-}
-
-const cardTitle = {
-  color: "#aaa",
-  marginBottom: "12px",
-  fontSize: "16px"
-}
-
-const cardNumber = {
-  fontSize: "42px"
-}
-
-const membersSection = {
-  backgroundColor: "#151515",
+    "linear-gradient(to bottom right, #161616, #101010)",
   padding: "25px",
   borderRadius: "24px",
-  marginBottom: "30px"
+  border: "1px solid #222",
+  cursor: "pointer"
 }
 
-const memberCard = {
-  backgroundColor: "#202020",
-  padding: "22px",
-  borderRadius: "18px",
-  marginBottom: "18px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: "20px",
-  flexWrap: "wrap"
-}
-
-const reminderButton = {
-  padding: "14px 20px",
-  border: "none",
-  borderRadius: "14px",
-  background:
-    "linear-gradient(to right, #22c55e, #16a34a)",
-  color: "white",
+const numberStyle = {
+  fontSize: "48px",
   fontWeight: "bold",
-  cursor: "pointer",
-  fontSize: "15px"
+  marginTop: "20px"
 }
 
-const mainButton = {
+const buttonStyle = {
   width: "100%",
   padding: "18px",
-  border: "none",
+  marginBottom: "18px",
   borderRadius: "18px",
+  border: "none",
   background:
-    "linear-gradient(to right, #ffffff, #dcdcdc)",
+    "linear-gradient(to right, white, #dcdcdc)",
   color: "black",
   fontWeight: "bold",
-  fontSize: "17px",
   cursor: "pointer",
-  marginBottom: "18px"
-}
-
-const secondaryButton = {
-  width: "100%",
-  padding: "18px",
-  borderRadius: "18px",
-  backgroundColor: "transparent",
-  border: "1px solid #333",
-  color: "white",
-  fontWeight: "bold",
-  fontSize: "17px",
-  cursor: "pointer"
+  fontSize: "17px"
 }
 
 export default Dashboard

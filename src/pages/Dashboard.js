@@ -31,6 +31,9 @@ function Dashboard({
   const [twoDaysLeftMembers, setTwoDaysLeftMembers] =
     useState([])
 
+  const [openCard, setOpenCard] =
+    useState("")
+
   useEffect(() => {
 
     const fetchMembers = async () => {
@@ -41,12 +44,7 @@ function Dashboard({
           .select("*")
           .eq("gym_id", gymData.id)
 
-      if (error) {
-
-        console.log(error)
-      }
-
-      else {
+      if (!error) {
 
         setMembers(data || [])
       }
@@ -65,12 +63,18 @@ function Dashboard({
     const selected =
       new Date(selectedDate)
 
-    const nextTwoDays =
+    const nextTwo =
       new Date(selectedDate)
 
-    nextTwoDays.setDate(
-      nextTwoDays.getDate() + 2
+    nextTwo.setDate(
+      nextTwo.getDate() + 2
     )
+
+    const selectedFormatted =
+      selected.toISOString().split("T")[0]
+
+    const nextTwoFormatted =
+      nextTwo.toISOString().split("T")[0]
 
     members.forEach((member) => {
 
@@ -79,12 +83,6 @@ function Dashboard({
 
       const expiryDate =
         expiry.toISOString().split("T")[0]
-
-      const selectedFormatted =
-        selected.toISOString().split("T")[0]
-
-      const nextTwoFormatted =
-        nextTwoDays.toISOString().split("T")[0]
 
       if (
         expiryDate === selectedFormatted
@@ -114,11 +112,8 @@ function Dashboard({
 
   const sendReminder = (member) => {
 
-    const gymName =
-      gymData?.gym_name || "Gym"
-
     const message =
-`${gymName} 💪
+`${gymData.gym_name} 💪
 
 Hi ${member.member_name},
 
@@ -129,11 +124,8 @@ Pending Fees: ₹${member.amount}
 Please renew your plan soon.
 Thank you.`
 
-    const phone =
-      `91${member.phone}`
-
     window.open(
-      `https://wa.me/${phone}?text=${encodeURIComponent(message)}`,
+      `https://wa.me/91${member.phone}?text=${encodeURIComponent(message)}`,
       "_blank"
     )
   }
@@ -149,14 +141,75 @@ Thank you.`
     )
   }
 
+  const renderMembers = (list) => {
+
+    if (list.length === 0) {
+
+      return (
+        <p
+          style={{
+            color: "#888",
+            marginTop: "15px"
+          }}
+        >
+          No members found
+        </p>
+      )
+    }
+
+    return list.map((member) => (
+
+      <div
+        key={member.id}
+        style={memberCard}
+      >
+
+        <div>
+
+          <h3
+            style={{
+              marginBottom: "8px",
+              fontSize: "18px"
+            }}
+          >
+            {member.member_name}
+          </h3>
+
+          <p style={smallText}>
+            📞 {member.phone}
+          </p>
+
+          <p style={smallText}>
+            📅 {member.end_date}
+          </p>
+
+          <p style={smallText}>
+            ₹{member.amount}
+          </p>
+
+        </div>
+
+        <button
+          onClick={() =>
+            sendReminder(member)
+          }
+          style={reminderButton}
+        >
+          Reminder
+        </button>
+
+      </div>
+
+    ))
+  }
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background:
-          "linear-gradient(to bottom, #0f0f0f, #000)",
+        backgroundColor: "#0b0b0b",
         color: "white",
-        padding: "20px",
+        padding: "18px",
         fontFamily: "Arial"
       }}
     >
@@ -166,9 +219,8 @@ Thank you.`
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          flexWrap: "wrap",
-          gap: "15px",
-          marginBottom: "30px"
+          marginBottom: "25px",
+          gap: "10px"
         }}
       >
 
@@ -176,227 +228,169 @@ Thank you.`
 
           <h1
             style={{
-              fontSize: "42px",
-              marginBottom: "8px"
-            }}
-          >
-            Welcome Back 👋
-          </h1>
-
-          <h2
-            style={{
-              color: "#aaa",
-              fontWeight: "normal",
-              marginBottom: "15px"
+              fontSize: "28px",
+              marginBottom: "6px"
             }}
           >
             {gymData.gym_name}
-          </h2>
+          </h1>
 
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) =>
-              setSelectedDate(
-                e.target.value
-              )
-            }
+          <p
             style={{
-              padding: "14px",
-              borderRadius: "14px",
-              border: "1px solid #333",
-              backgroundColor: "#181818",
-              color: "white",
-              fontSize: "15px",
-              outline: "none"
+              color: "#888",
+              fontSize: "14px"
             }}
-          />
+          >
+            Gym Dashboard
+          </p>
 
         </div>
 
         <button
           onClick={handleLogout}
-          style={{
-            padding: "14px 22px",
-            border: "none",
-            borderRadius: "14px",
-            background:
-              "linear-gradient(to right, #ff3b3b, #ff0000)",
-            color: "white",
-            cursor: "pointer",
-            fontWeight: "bold",
-            fontSize: "15px"
-          }}
+          style={logoutButton}
         >
           Logout
         </button>
 
       </div>
 
+      <input
+        type="date"
+        value={selectedDate}
+        onChange={(e) =>
+          setSelectedDate(e.target.value)
+        }
+        style={dateInput}
+      />
+
       <div
         style={{
           display: "grid",
           gridTemplateColumns:
-            "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "20px",
-          marginBottom: "35px"
+            "repeat(auto-fit, minmax(140px, 1fr))",
+          gap: "14px",
+          marginTop: "25px",
+          marginBottom: "25px"
         }}
       >
 
         <div
-          onClick={() =>
-            setOpenViewMembers(true)
-          }
           style={cardStyle}
-        >
-          <h3>Total Members</h3>
-
-          <p style={numberStyle}>
-            {members.length}
-          </p>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Due Payments</h3>
-
-          <p style={numberStyle}>
-            {dueMembers.length}
-          </p>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>Expired Plans</h3>
-
-          <p style={numberStyle}>
-            {expiredMembers.length}
-          </p>
-        </div>
-
-        <div style={cardStyle}>
-          <h3>2 Days Left</h3>
-
-          <p style={numberStyle}>
-            {twoDaysLeftMembers.length}
-          </p>
-        </div>
-
-      </div>
-
-      <div
-        style={{
-          backgroundColor: "#151515",
-          padding: "25px",
-          borderRadius: "24px",
-          marginBottom: "30px",
-          border: "1px solid #222"
-        }}
-      >
-
-        <h2
-          style={{
-            marginBottom: "25px",
-            fontSize: "30px"
+          onClick={() => {
+            setOpenCard("total")
+            setOpenViewMembers(true)
           }}
         >
-          Expiring In 2 Days
-        </h2>
+          <p style={cardTitle}>
+            Total Members
+          </p>
 
-        {
-          twoDaysLeftMembers.length === 0 && (
+          <h2 style={cardNumber}>
+            {members.length}
+          </h2>
+        </div>
 
-            <p
-              style={{
-                color: "#888"
-              }}
-            >
-              No members expiring in 2 days
-            </p>
+        <div
+          style={cardStyle}
+          onClick={() =>
+            setOpenCard("due")
+          }
+        >
+          <p style={cardTitle}>
+            Due Payments
+          </p>
 
-          )
-        }
+          <h2 style={cardNumber}>
+            {dueMembers.length}
+          </h2>
+        </div>
 
-        {
-          twoDaysLeftMembers.map((member) => (
+        <div
+          style={cardStyle}
+          onClick={() =>
+            setOpenCard("expired")
+          }
+        >
+          <p style={cardTitle}>
+            Expired
+          </p>
 
-            <div
-              key={member.id}
-              style={{
-                backgroundColor: "#202020",
-                padding: "22px",
-                borderRadius: "22px",
-                marginBottom: "18px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: "20px"
-              }}
-            >
+          <h2 style={cardNumber}>
+            {expiredMembers.length}
+          </h2>
+        </div>
 
-              <div>
+        <div
+          style={cardStyle}
+          onClick={() =>
+            setOpenCard("twodays")
+          }
+        >
+          <p style={cardTitle}>
+            2 Days Left
+          </p>
 
-                <h2
-                  style={{
-                    marginBottom: "12px"
-                  }}
-                >
-                  {member.member_name}
-                </h2>
-
-                <p>📞 {member.phone}</p>
-
-                <p>📦 {member.plan}</p>
-
-                <p>💰 ₹{member.amount}</p>
-
-                <p>⏳ {member.end_date}</p>
-
-                <p
-                  style={{
-                    color:
-                      member.payment_status === "Paid"
-                        ? "#4dff91"
-                        : "#ff7675",
-                    fontWeight: "bold",
-                    marginTop: "10px"
-                  }}
-                >
-                  {member.payment_status}
-                </p>
-
-              </div>
-
-              <button
-                onClick={() =>
-                  sendReminder(member)
-                }
-                style={{
-                  padding: "16px 24px",
-                  border: "none",
-                  borderRadius: "16px",
-                  background:
-                    "linear-gradient(to right, #22c55e, #16a34a)",
-                  color: "white",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  fontSize: "15px"
-                }}
-              >
-                Send Reminder
-              </button>
-
-            </div>
-
-          ))
-        }
+          <h2 style={cardNumber}>
+            {twoDaysLeftMembers.length}
+          </h2>
+        </div>
 
       </div>
+
+      {
+        openCard === "due" && (
+
+          <div style={sectionStyle}>
+
+            <h2 style={sectionTitle}>
+              Due Payments
+            </h2>
+
+            {renderMembers(dueMembers)}
+
+          </div>
+
+        )
+      }
+
+      {
+        openCard === "expired" && (
+
+          <div style={sectionStyle}>
+
+            <h2 style={sectionTitle}>
+              Expired Members
+            </h2>
+
+            {renderMembers(expiredMembers)}
+
+          </div>
+
+        )
+      }
+
+      {
+        openCard === "twodays" && (
+
+          <div style={sectionStyle}>
+
+            <h2 style={sectionTitle}>
+              Expiring In 2 Days
+            </h2>
+
+            {renderMembers(twoDaysLeftMembers)}
+
+          </div>
+
+        )
+      }
 
       <button
         onClick={() =>
           setShowMembers(true)
         }
-        style={buttonStyle}
+        style={mainButton}
       >
         Add Member
       </button>
@@ -405,7 +399,7 @@ Thank you.`
         onClick={() =>
           setOpenViewMembers(true)
         }
-        style={buttonStyle}
+        style={mainButton}
       >
         View Members
       </button>
@@ -414,33 +408,97 @@ Thank you.`
   )
 }
 
+const dateInput = {
+  width: "100%",
+  padding: "14px",
+  borderRadius: "14px",
+  border: "1px solid #222",
+  backgroundColor: "#161616",
+  color: "white",
+  fontSize: "15px",
+  boxSizing: "border-box"
+}
+
+const logoutButton = {
+  padding: "12px 18px",
+  border: "none",
+  borderRadius: "12px",
+  backgroundColor: "#ff2d55",
+  color: "white",
+  cursor: "pointer",
+  fontWeight: "bold",
+  fontSize: "14px"
+}
+
 const cardStyle = {
-  background:
-    "linear-gradient(to bottom right, #161616, #101010)",
-  padding: "25px",
-  borderRadius: "24px",
+  backgroundColor: "#151515",
+  padding: "18px",
+  borderRadius: "18px",
   border: "1px solid #222",
   cursor: "pointer"
 }
 
-const numberStyle = {
-  fontSize: "48px",
-  fontWeight: "bold",
-  marginTop: "20px"
+const cardTitle = {
+  color: "#888",
+  fontSize: "14px"
 }
 
-const buttonStyle = {
-  width: "100%",
+const cardNumber = {
+  fontSize: "32px",
+  marginTop: "10px"
+}
+
+const sectionStyle = {
+  backgroundColor: "#151515",
   padding: "18px",
-  marginBottom: "18px",
   borderRadius: "18px",
+  marginBottom: "20px"
+}
+
+const sectionTitle = {
+  marginBottom: "18px",
+  fontSize: "20px"
+}
+
+const memberCard = {
+  backgroundColor: "#202020",
+  padding: "16px",
+  borderRadius: "16px",
+  marginBottom: "14px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "12px"
+}
+
+const smallText = {
+  color: "#bbb",
+  fontSize: "14px",
+  marginBottom: "5px"
+}
+
+const reminderButton = {
+  padding: "12px 14px",
   border: "none",
-  background:
-    "linear-gradient(to right, white, #dcdcdc)",
+  borderRadius: "12px",
+  backgroundColor: "#25D366",
+  color: "white",
+  cursor: "pointer",
+  fontWeight: "bold",
+  fontSize: "13px"
+}
+
+const mainButton = {
+  width: "100%",
+  padding: "16px",
+  border: "none",
+  borderRadius: "16px",
+  backgroundColor: "white",
   color: "black",
   fontWeight: "bold",
-  cursor: "pointer",
-  fontSize: "17px"
+  fontSize: "15px",
+  marginBottom: "14px",
+  cursor: "pointer"
 }
 
 export default Dashboard
